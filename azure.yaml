@@ -1,0 +1,25 @@
+trigger:
+- main  # Trigger the pipeline when changes are pushed to the 'main' branch
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use an Ubuntu agent for running the pipeline
+
+steps:
+- task: DotNetCoreCLI@2  # Use the DotNetCoreCLI task to build and test the application
+  displayName: 'Build and Test'
+  inputs:
+    command: 'build'  # Build the project
+    projects: '**/*.csproj'  # Path to the .csproj file(s)
+    arguments: '--configuration Release'  # Build in Release mode
+- task: DotNetCoreCLI@2  # Use the DotNetCoreCLI task to publish the application
+  displayName: 'Publish'
+  inputs:
+    command: 'publish'  # Publish the project
+    publishWebProjects: true  # Publish web projects
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'  # Publish in Release mode and specify output directory
+    zipAfterPublish: true  # Zip the published files
+- task: PublishBuildArtifacts@1  # Publish the build artifacts
+  displayName: 'Publish Artifact'
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Path to the artifact to publish
+    artifactName: 'drop'  # Name of the artifact
